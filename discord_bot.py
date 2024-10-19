@@ -23,7 +23,10 @@ from discord import ApplicationContext, File
 
 async def send_markdown_file(ctx:ApplicationContext, content):
     file_path = "output.md"
-    with open(file_path, "w", encoding="utf-8") as file:
+    if not os.path.exists("out"):
+        os.makedirs("out")
+    file_path = os.path.join("out", f'{file_path}.md')
+    with open(file_path, 'w') as file:
         file.write(content)
     await ctx.send(file=File(file_path))
 
