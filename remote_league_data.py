@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv, dotenv_values 
 import datetime
 
-from models.match_v5 import MatchDto
+from models.match_v5 import MatchDto, TimelineDto
 
 from models.search_match_model import SearchMatchModel
 
@@ -30,7 +30,11 @@ class RemoteClient:
     def get_match(self, match_id)-> MatchDto:
         result = requests.get(f"{self.match_url}/lol/match/v5/matches/{match_id}", verify=False, headers=self.headers).json()
         return MatchDto(**result)
-    
+
+
+    def get_timeline(self, match_id) -> TimelineDto:
+        result = requests.get(f"{self.match_url}/lol/match/v5/matches/{match_id}/timeline", verify=False, headers=self.headers).json()
+        return TimelineDto(**result)
 
     def get_riot_id(self, **kwargs):
         name = kwargs.get("name", None)
@@ -51,7 +55,7 @@ class RemoteClient:
 
 
     def get_user(self,puuid):
-        return requests.get(f"{self.account_url}/riot/account/v1/accounts/by-puuid/{puuid}", verify=False, headers=self.headers).json()
+        return requests.get(f"https://europe.api.riotgames.com/riot/account/v1/accounts/by-puuid/{puuid}", verify=False, headers=self.headers).json()
     
 
 if __name__ == "__main__":

@@ -9,7 +9,8 @@ from datetime import datetime, timedelta
 
 from logger_decorator import LogArgsKwargs
 from models.match_summary import MatchSummary
-from models.match_v5 import MatchDto, ParticipantDto
+from models.timeline import TimelineData
+from models.match_v5 import MatchDto, TimelineDto
 from models.search_match_model import SearchMatchModel
 from remote_league_data import RemoteClient
 
@@ -96,7 +97,22 @@ async def get_match_summary(ctx: discord.ApplicationContext,
         await ctx.send(content=str(player))
     
 
-print("Starting...")
+@LogArgsKwargs
+@bot.slash_command(
+    name="get_milestone_stats",
+    description="Input a MatchID and the minute you want"
+)
+async def get_milestone_stats(ctx: discord.ApplicationContext,
+                              match_id: discord.Option(str, required=True, description="The match ID, get this from your match history or from the /search_matches command"), # type: ignore
+                              minute: discord.Option(int, required=True, description="The minute you want"), # type: ignore
+                            ):
+    match_timeline: TimelineDto = league.get_timeline(match_id=match_id)
+    timeline_data = TimelineData.from_riot_api_data(api_data=match_timeline, minute=minute)
+    await ctx.send(content=f"Statistics at {minute} minutes:\n======================================")
+    for player in timeline_data.players:
+        user = league.get_user(player.name)
+        await ctx.send(content=f"{user['gameName']}'s stats:{str(player)}======================================")
+
 print("Starting...")
 bot.run(bot_token)
 
