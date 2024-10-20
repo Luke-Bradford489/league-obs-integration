@@ -68,11 +68,11 @@ class RemoteClient:
         # loser_list : list[ParticipantDto]
         request: DamageGraphRequest = DamageGraphRequest.from_match(match=match)
         winner_img, loser_img = plotBar(
-            damage_list=[player.totalDamageDealtToChampions for player in request.winner_list],
-            champ_name_list=[player.championName for player in request.winner_list],
+            damage_list=[player.totalDamageDealtToChampions for player in request.blue_side_list],
+            champ_name_list=[player.championName for player in request.blue_side_list],
         ), plotBar(
-            damage_list=[player.totalDamageDealtToChampions for player in request.loser_list],
-            champ_name_list=[player.championName for player in request.loser_list],
+            damage_list=[player.totalDamageDealtToChampions for player in request.red_side_list],
+            champ_name_list=[player.championName for player in request.red_side_list],
             invert_graph=True
         )
         return [winner_img, loser_img]

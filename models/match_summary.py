@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+from constants.team_side_enum import TeamSide
 from models.match_v5 import MatchDto, ParticipantDto
 
 class Player(BaseModel):
@@ -19,9 +20,7 @@ class Player(BaseModel):
     magic_damage: int
     physical_damage: int
     total_damage: int
-
-
-
+    side: TeamSide
     total_damage_taken: int
 
     total_heal: int
@@ -72,7 +71,8 @@ class Player(BaseModel):
         total_damage = player.totalDamageDealtToChampions,
         total_damage_taken = player.totalDamageTaken,
         total_heal = player.totalHeal,
-        total_shielded = player.totalDamageShieldedOnTeammates ,
+        total_shielded = player.totalDamageShieldedOnTeammates,
+        side= TeamSide.from_value( player.teamId)
         )
         
 
