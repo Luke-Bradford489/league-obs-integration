@@ -1,6 +1,7 @@
 # This example requires the 'message_content' intent.
 # https://stackoverflow.com/questions/71165431/how-do-i-make-a-working-slash-command-in-discord-py
 
+from io import BytesIO
 import os
 import discord
 from discord.ext import commands
@@ -112,6 +113,24 @@ async def get_milestone_stats(ctx: discord.ApplicationContext,
     for player in timeline_data.players:
         user = league.get_user(player.name)
         await ctx.send(content=f"{user['gameName']}'s stats:{str(player)}======================================")
+
+@LogArgsKwargs
+@bot.slash_command(
+    name="get_damage_graphs",
+    description="Input a MatchID and the minute you want"
+)
+async def get_damage_graphs(ctx: discord.ApplicationContext,
+                              match_id: discord.Option(str, required=True, description="The match ID, get this from your match history or from the /search_matches command"), # type: ignore
+                            ):
+    imgs: list[BytesIO] = league.get_damage_graphs(match_id=match_id)
+    await ctx.respond("Generating images, they will be sent to the channel shortly.")
+    for i, img in enumerate(imgs):
+        filename=f"damage_graph_{i}.png"
+        with open(filename, 'wb') as file:
+            file.write(img.getvalue())
+        img.seek(0)
+        await ctx.send(file=File(img, filename=filename))
+    
 
 print("Starting...")
 bot.run(bot_token)

@@ -80,7 +80,6 @@ def plotBar(damage_list: list[int], champ_name_list: list[str], invert_graph=Fal
         fig.gca().invert_xaxis()
     ax.set_facecolor("black")
     fig.set_facecolor("black")
-    plt.show()
     buffer: BytesIO = BytesIO()
     fig.savefig(buffer, dpi=300, bbox_inches="tight")
     return buffer
