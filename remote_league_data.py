@@ -64,19 +64,22 @@ class RemoteClient:
             headers=self.headers,
         ).json()
         match: MatchDto = MatchDto(**result)
-        # winner_list: list[ParticipantDto]
-        # loser_list : list[ParticipantDto]
         request: DamageGraphRequest = DamageGraphRequest.from_match(match=match)
         winner_img, loser_img = plotBar(
-            damage_list=[player.totalDamageDealtToChampions for player in request.blue_side_list],
+            damage_list=[
+                player.totalDamageDealtToChampions for player in request.blue_side_list
+            ],
             champ_name_list=[player.championName for player in request.blue_side_list],
+            y_limit=request.upper_limit,
         ), plotBar(
-            damage_list=[player.totalDamageDealtToChampions for player in request.red_side_list],
+            damage_list=[
+                player.totalDamageDealtToChampions for player in request.red_side_list
+            ],
             champ_name_list=[player.championName for player in request.red_side_list],
-            invert_graph=True
+            y_limit=request.upper_limit,
+            invert_graph=True,
         )
         return [winner_img, loser_img]
-
 
     def get_riot_id(self, **kwargs):
         name = kwargs.get("name", None)

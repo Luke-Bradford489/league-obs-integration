@@ -33,7 +33,7 @@ def _add_image(img, y, ax: plt.Axes, invert_y:bool = False):
     ax.add_artist(ab)
 
 
-def plotBar(damage_list: list[int], champ_name_list: list[str], invert_graph=False):
+def plotBar(damage_list: list[int], champ_name_list: list[str], invert_graph=False, y_limit= 50000):
     color = "#0397AB"
     if invert_graph:
         champ_name_list = champ_name_list[::-1]
@@ -52,7 +52,7 @@ def plotBar(damage_list: list[int], champ_name_list: list[str], invert_graph=Fal
     if invert_graph:
         for bar in bars:
             ax.text(
-                bar.get_width() - 1, 
+                bar.get_width() + 5, 
                 bar.get_y() + bar.get_height() / 2,  
                 f"{bar.get_width()}", 
                 va="center",  
@@ -65,9 +65,11 @@ def plotBar(damage_list: list[int], champ_name_list: list[str], invert_graph=Fal
             ax.text(
                 value + 1, index, str(value), va="center", color=color, fontsize=24
             )
-
+    ax.set_xlim([0, y_limit])
     ax.set_xticks([])
     ax.set_xticklabels([])
+    ax.set_yticks([])
+    ax.set_yticklabels([])
     fig.set_size_inches((6, 5))
     fig.gca().spines["top"].set_visible(False)
     fig.gca().spines["right"].set_visible(False)
