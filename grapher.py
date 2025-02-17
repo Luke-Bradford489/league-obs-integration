@@ -4,8 +4,10 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import requests
+
+from models.ten_min_stats_model import TenMinStatsModel
 
 def _getRemoteImage(name: str) -> BytesIO:
     ddragon_url_template = (
@@ -85,6 +87,39 @@ def plotBar(damage_list: list[int], champ_name_list: list[str], invert_graph=Fal
     buffer: BytesIO = BytesIO()
     fig.savefig(buffer, dpi=300, bbox_inches="tight")
     return buffer
+
+# K/D/A
+# Gold earned
+# DPM
+# Kill participation
+# Wards placed
+# Wards destroyed
+def ten_min_stats(stats: TenMinStatsModel):
+    width, height = 300, 180
+
+    img = Image.new('RGB', (width, height), (0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype('arial.ttf', size=20)
+
+    x, y = 10, 10
+    spacing = 30
+
+    draw.text((x, y), "0/0/0", font=font, fill=(255, 255, 255))
+    draw.text((x, y + spacing), "K/D/A", font=font, fill=(255, 255, 255))
+    draw.text((x, y + spacing * 2), "0", font=font, fill=(255, 255, 255))
+    draw.text((x, y + spacing * 3), "MINION KILLS (CS)", font=font, fill=(255, 255, 255))
+    draw.text((x, y + spacing * 4), "0%", font=font, fill=(255, 255, 255))
+    draw.text((x, y + spacing * 5), "CHAMPION DAMAGE SHARE", font=font, fill=(255, 255, 255))
+    draw.text((x, y + spacing * 6), "0", font=font, fill=(255, 255, 255))
+    draw.text((x, y + spacing * 7), "WARDS PLACED", font=font, fill=(255, 255, 255))
+    draw.text((x, y + spacing * 8), "0%", font=font, fill=(255, 255, 255))
+    draw.text((x, y + spacing * 9), "KILL PARTICIPATION", font=font, fill=(255, 255, 255))
+    draw.text((x, y + spacing * 10), "0", font=font, fill=(255, 255, 255))
+    draw.text((x, y + spacing * 11), "WARDS DESTROYED", font=font, fill=(255, 255, 255))
+
+
+    # Save the image
+    img.save('stats_image.png')
 
 
 if __name__ == "__main__":

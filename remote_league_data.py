@@ -81,6 +81,23 @@ class RemoteClient:
         )
         return [winner_img, loser_img]
 
+    def get_ten_min_stats(self, **kwargs):
+        name = kwargs.get("name", None)
+        match_id = kwargs.get("match_id", None)
+
+        if not name and not match_id and name.find("#") == -1:
+            raise Exception(
+                "Marafucka gimme an actual match id and player name(+tag). i.e EUW11123123 and xXBobXx#Euw"
+            )
+        result = requests.get(
+            f"{self.match_url}/lol/match/v5/matches/{match_id}",
+            verify=False,
+            headers=self.headers,
+        ).json()
+        match: MatchDto = MatchDto(**result)
+
+        
+
     def get_riot_id(self, **kwargs):
         name = kwargs.get("name", None)
         if name and name.find("#") != -1:
