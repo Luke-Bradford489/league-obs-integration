@@ -52,7 +52,7 @@ class ChallengesDto(BaseModel):
     alliedJungleMonsterKills: Optional[float] = None
     baronTakedowns: Optional[int] = None
     blastConeOppositeOpponentCount: Optional[int] = None
-    bountyGold: Optional[int] = None
+    bountyGold: Optional[float] = None
     buffsStolen: Optional[int] = None
     completeSupportQuestInTime: Optional[int] = None
     controlWardsPlaced: Optional[int] = None
