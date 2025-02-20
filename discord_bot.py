@@ -2,6 +2,7 @@
 # https://stackoverflow.com/questions/71165431/how-do-i-make-a-working-slash-command-in-discord-py
 
 from io import BytesIO
+import io
 import os
 import discord
 from discord.ext import commands
@@ -15,6 +16,7 @@ from models.timeline import TimelineData
 from models.match_v5 import MatchDto, TimelineDto
 from models.search_match_model import SearchMatchModel
 from remote_league_data import RemoteClient
+from utils import write_pydantic_to_csv
 
 bot = commands.Bot()
 load_dotenv()
@@ -25,13 +27,15 @@ league = RemoteClient()
 from discord import ApplicationContext, File
 
 
-async def send_markdown_file(ctx: ApplicationContext, content):
-    file_path = "output.md"
+async def send_file(ctx: ApplicationContext, content, filename = "output.out"):
+    file_path = filename
     if not os.path.exists("out"):
         os.makedirs("out")
-    file_path = os.path.join("out", f"{file_path}.md")
-    with open(file_path, "w") as file:
-        file.write(content)
+    file_path = os.path.join("out", f"{file_path}")
+    mode = "wb" if isinstance(content, io.BytesIO) else "w"
+
+    with open(file_path, mode) as file:
+        file.write(content.getvalue())
     await ctx.send(file=File(file_path))
 
 
@@ -93,14 +97,19 @@ async def get_match(ctx, match_id: discord.Option(str, required=True, descriptio
 async def get_match_summary(
     ctx: discord.ApplicationContext,
     match_id: discord.Option(str, required=True, description="The match ID, get this from your match history or from the /search_matches command"),  # type: ignore
+    csv: discord.Option(bool, required=False, default=False, description="True if you want the response to be a CSV file, if left empty will return as discord messages"),  # type: ignore
 ):
     match: MatchDto = league.get_match(match_id=match_id)
 
     match_summary: MatchSummary = MatchSummary.from_match(match=match)
 
     # await ctx.respond(str(match_summary))
-    for player in match_summary.players:
-        await ctx.send(content=str(player))
+    if csv:
+        csv_file = write_pydantic_to_csv(match_summary.players)
+        await send_file(ctx ,content=csv_file, filename=f"{match_id}_summary.csv")
+    else:
+        for player in match_summary.players:
+            await ctx.send(content=str(player))
 
 
 @LogArgsKwargs
@@ -110,20 +119,29 @@ async def get_match_summary(
 async def get_milestone_stats(
     ctx: discord.ApplicationContext,
     match_id: discord.Option(str, required=True, description="The match ID, get this from your match history or from the /search_matches command"),  # type: ignore
-    minute: discord.Option(int, required=True, description="The minute you want"),  # type: ignore
+    minute: discord.Option(int, required=True, description="The minute you want (e.g 3, 10, 15)"),  # type: ignore
+    csv: discord.Option(bool, required=False, default=False, description="True if you want the response to be a CSV file, if left empty will return as discord messages"),  # type: ignore
+
 ):
     match_timeline: TimelineDto = league.get_timeline(match_id=match_id)
     timeline_data = TimelineData.from_riot_api_data(
         api_data=match_timeline, minute=minute
     )
-    await ctx.send(
-        content=f"Statistics at {minute} minutes:\n======================================"
-    )
-    for player in timeline_data.players:
-        user = league.get_user(player.name)
+    if csv:
+        for player in timeline_data.players:
+            user = league.get_user(player.name)
+            player.name = user['gameName']
+        csv_file = write_pydantic_to_csv(timeline_data.players)
+        await send_file(ctx ,content=csv_file, filename=f"{match_id}_{minute}_minute_summary.csv")
+    else:
         await ctx.send(
-            content=f"{user['gameName']}'s stats:{str(player)}======================================"
+            content=f"Statistics at {minute} minutes:\n======================================"
         )
+        for player in timeline_data.players:
+            user = league.get_user(player.name)
+            await ctx.send(
+                content=f"{user['gameName']}'s stats:{str(player)}======================================"
+            )
 
 
 @LogArgsKwargs
@@ -139,6 +157,14 @@ async def get_damage_graphs(
     merged_image = merge_two_images_horizontally(imgs)
     merged_image.seek(0)
     await ctx.send(file=File(merged_image, filename="merged_image.png"))
+
+
+@bot.slash_command(name="sync", description="Sync command changes")
+async def sync(
+    ctx: discord.ApplicationContext,
+):
+    await bot.sync_commands()
+    await ctx.respond("Commands synced!")
 
 
 print("Starting...")
